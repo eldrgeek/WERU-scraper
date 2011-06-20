@@ -18,7 +18,23 @@ end
 puts ']'
 end
 
+def display_show(doc, lines, entry )
 
+  line =   lines[entry]
+  return if line.nil?
+  name =   line[:name]
+  height = line[:height]
+  genre =  line[:genre]
+  time =   line[:time]
+  #remove one pixel for the border
+  pixelheight = Integer(height.match(/(\d*)px/)[1]) - 1
+
+  doc.div( :class => "#{genre} show" , 
+          :style => "height: #{pixelheight}"){
+    doc.text name
+  }
+
+end
 def write_schedule( lines ) 
   daynames = %w(Sun Mon Tue Wed Thu Fri Sat )
   @builder = Nokogiri::HTML::Builder.new { |doc|
@@ -49,7 +65,8 @@ def write_schedule( lines )
         doc.tr { #write the row that is the body of the table
           #write first column with hours
           doc.td(:class=>'hours'){
-          (0..23).each { |hour|
+          #cycle through the hours from 5AM and then to midhnight
+          ( (5..22).each.collect + [0, 1, 2]).each { |hour|
             doc.div.hoursdiv {
               doc.text(hourname(hour)) 
               }
@@ -58,26 +75,27 @@ def write_schedule( lines )
           entry = 0
           (0..7).each { |day| 
             doc.td(:class => 'days') {
-              puts "going into loop"
-              loop do #we are going to loop until the day changes
-              line =   lines[entry]
-              break if line.nil?
-              #p line
-              name =   line[:name]
-              height = line[:height]
-              genre =  line[:genre]
-              time =   line[:time]
-              doc.div( :class => "#{genre} show" , :style => height){
-                 doc.text name
-              }
-              #go to next entry and see if we have switched times or finished
-              entry += 1
-              line = lines[entry]
-              break if line.nil?
-              time = line[:time]
-              #p line if time =~ /^12.*am/
-              break if time =~ /^12.*am/
+              #puts "going into loop"
+              first_in_loop = entry; #this is the midnight show
+              loop do #skip until the 5AM show
+                line =   lines[entry]
+                break if line.nil?
+                #p line
+                time =   line[:time]
+                break if time =~ /^5.*am/
+                entry += 1
+              end
+              loop do
+                display_show(doc, lines, entry)
+                #go to next entry and see if we have switched times or finished
+                entry += 1
+                line = lines[entry]
+                break if line.nil?
+                time = line[:time]
+                #p line if time =~ /^12.*am/
+                break if time =~ /^12.*am/
               end #finish the day..
+              display_show(doc, lines, first_in_loop)
             } #finish the td
           } #loop through the days     
         } #finish the big row containig it all
