@@ -1,0 +1,12 @@
+Public=hsl(0,0,100%)
+Folk=hsl(0,75%,40%
+Americana=hsl(30,75%,40%)
+Rock=hsl(60,75%,40%)
+Blues=hsl(90,75%,40%)
+World=hsl(120,75%,75%)
+Folk=hsl(150,75%,75%)
+Spoken=hsl(180,75%,75%)
+Eclectic=hsl(210,75%,75%)
+Jazz=hsl(240,75%,75%)
+Country=hsl(280,75%,75%)
+Children=hsl(310,75%,75%)

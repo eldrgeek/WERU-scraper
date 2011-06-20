@@ -1,0 +1,9 @@
+
+body {background-color:lightgray;}
+.heading {color: black; font-family: Arial, "MS Trebuchet", sans-serif;}
+td {border: 1px solid black;font-family: Arial, "MS Trebuchet", sans-serif;
+font-size: 12px; }
+.hoursdiv{float: top; height: 60px; border-bottom: 1px solid white; background-color: darkblue; color: white;}
+.dayheading {background-color: darkblue; color: white;}
+.hours {text-align: }
+.show { width: 120px; }
