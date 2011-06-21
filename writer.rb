@@ -1,46 +1,51 @@
-  #nWriter: writes the line from the state file:
+  #Writer: writes the line from the state file:
   #And saves the critical date in werustate.txt.
   #For testing it can be called with a count in which case it will only read the prescribed number of entries.
   #
 require 'state.rb' #needed to save the state
 require 'nokogiri'
+
 def hourname(hour)
   return "12am" if hour == 0
   return "#{hour}am" if hour < 11
   return "12pm" if hour == 11
   return "#{hour-11}pm"
 end
+
 def display_lines( lines )
-puts '['
-lines.each do |line|
-puts "[ #{line[0]} , #{line[1]}, #{line[2]} , #{line[3]} ], "
+  puts '['
+  lines.each do |line|
+  puts "[ #{line[0]} , #{line[1]}, #{line[2]} , #{line[3]} ], "
+  end
+  puts ']'
 end
-puts ']'
-end
+
 
 def display_show(doc, lines, entry )
-
   line =   lines[entry]
-  return if line.nil?
+  return 0 if line.nil?
   name =   line[:name]
   height = line[:height]
   genre =  line[:genre]
   time =   line[:time]
   #remove one pixel for the border
   pixelheight = Integer(height.match(/(\d*)px/)[1]) - 1
+  showdiv( doc, genre, pixelheight, name)
+end
+def showdiv( doc, genre, pixelheight, name)
 
   doc.div( :class => "#{genre} show" , 
           :style => "height: #{pixelheight}"){
     doc.text name
   }
-
+  return pixelheight + 1
 end
 def write_schedule( lines ) 
   daynames = %w(Sun Mon Tue Wed Thu Fri Sat )
   @builder = Nokogiri::HTML::Builder.new { |doc|
     doc.html {
       doc.head {
-      doc.title.titleclass "WERU schedule" 
+      doc.title.titleclass "WERU schedule"
       doc.link(:rel =>"stylesheet",
                :type => "text/css", :href => "weru.css")
       doc.link(:rel =>"stylesheet",
@@ -61,19 +66,20 @@ def write_schedule( lines )
             }
           }
         } #end of top row
-
+        hourslist = ( (5..22).each.collect + [0, 1, 2] )
         doc.tr { #write the row that is the body of the table
           #write first column with hours
           doc.td(:class=>'hours'){
           #cycle through the hours from 5AM and then to midhnight
-          ( (5..22).each.collect + [0, 1, 2]).each { |hour|
+          hourslist.each { |hour|
             doc.div.hoursdiv {
               doc.text(hourname(hour)) 
               }
             }
           } #finished with the hours column
           entry = 0
-          (0..7).each { |day| 
+          
+          (0..6).each { |day| 
             doc.td(:class => 'days') {
               #puts "going into loop"
               first_in_loop = entry; #this is the midnight show
@@ -85,8 +91,10 @@ def write_schedule( lines )
                 break if time =~ /^5.*am/
                 entry += 1
               end
+              #keep track of number of pixels on this page...
+              pixels = 0;
               loop do
-                display_show(doc, lines, entry)
+                pixels += display_show(doc, lines, entry)
                 #go to next entry and see if we have switched times or finished
                 entry += 1
                 line = lines[entry]
@@ -95,7 +103,10 @@ def write_schedule( lines )
                 #p line if time =~ /^12.*am/
                 break if time =~ /^12.*am/
               end #finish the day..
-              display_show(doc, lines, first_in_loop)
+              pixels += display_show(doc, lines, first_in_loop)
+              if( pixels < hourslist.length * 60 )
+                showdiv( doc, "filler", hourslist.length * 60  - pixels, "Filler!")
+              end
             } #finish the td
           } #loop through the days     
         } #finish the big row containig it all

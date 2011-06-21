@@ -1,4 +1,4 @@
-
+require 'yaml'
 def state_save(file, *state)
 	#usage: state_save (var.....)
 	#saves the state in the given file
